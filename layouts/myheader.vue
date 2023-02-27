@@ -34,7 +34,7 @@
                 <!--                <el-dropdown-item divided>退出登录</el-dropdown-item>-->
                 <!--            </el-dropdown-menu>-->
                 <!--        </el-dropdown>-->
-                <span class="v-link clickable" @click="dialogUserFormVisible = true">登录/注册</span>
+                <span class="v-link clickable" id="loginDialog" @click="dialogUserFormVisible = true">登录/注册</span>
             </div>
         </div>
 
@@ -113,6 +113,8 @@
 <script>
 import jsCookie from "js-cookie";
 import {userLogin} from "@/api/userInfo"
+import {sendCode} from "@/api/sms";
+import Vue from "vue";
 
 const defaultDialogAtrr = {
     showLoginType: 'phone', // 控制手机登录与微信登录切换
@@ -151,6 +153,12 @@ export default {
     created() {
         this.showInfo()
     },
+    mounted() {
+        window.loginEvent = new Vue();
+        loginEvent.$on('loginDialogEvent', () => {
+            document.getElementById("loginDialog").click();
+        })
+    },
     methods: {
         // 绑定登录或获取验证码按钮
         btnClick() {
@@ -165,7 +173,6 @@ export default {
                 this.login()
             }
         },
-
         // 绑定登录，点击显示登录层
         showLogin() {
             this.dialogUserFormVisible = true
@@ -193,7 +200,11 @@ export default {
             this.dialogAtrr.loginBtn = '正在提交...'
 
             try {
-                let result = (await userLogin(this.userInfo)).data;
+                let result = await userLogin(this.userInfo);
+                if (result.code !== 200) {
+                    throw "error"
+                }
+                this.setCookies(result.data.name, result.data.token)
             } catch (e) {
                 this.dialogAtrr.loginBtn = '马上登录'
             }
@@ -215,7 +226,7 @@ export default {
         },
 
         // 获取验证码
-        getCodeFun() {
+        async getCodeFun() {
             if (!(/^1[34578]\d{9}$/.test(this.userInfo.phone))) {
                 this.$message.error('手机号码不正确')
                 return;
@@ -233,6 +244,12 @@ export default {
             // 发送短信验证码
             this.timeDown();
             this.dialogAtrr.sending = false;
+            try {
+                let result = (await sendCode(this.userInfo.phone)).data;
+            } catch (e) {
+                this.$message.error('发送失败，重新发送')
+                this.showLogin()
+            }
             // smsApi.sendCode(this.userInfo.phone).then(response => {
             //     this.timeDown();
             // }).catch(e => {
