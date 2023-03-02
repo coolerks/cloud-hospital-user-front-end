@@ -115,6 +115,7 @@ import jsCookie from "js-cookie";
 import {userLogin} from "@/api/userInfo"
 import {sendCode} from "@/api/sms";
 import Vue from "vue";
+import {getLoginParam} from "@/api/wechat";
 
 const defaultDialogAtrr = {
     showLoginType: 'phone', // 控制手机登录与微信登录切换
@@ -158,6 +159,10 @@ export default {
         loginEvent.$on('loginDialogEvent', () => {
             document.getElementById("loginDialog").click();
         })
+        const script = document.createElement("script");
+        script.type = 'text/javascript';
+        script.src = "https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"
+        document.body.append(script);
     },
     methods: {
         // 绑定登录或获取验证码按钮
@@ -308,8 +313,13 @@ export default {
             window.location.href = '/hospital/' + item.hoscode
         },
 
-        weixinLogin() {
-            this.dialogAtrr.showLoginType = 'weixin'
+        async weixinLogin() {
+            this.dialogAtrr.showLoginType = 'weixin';
+            let config = (await getLoginParam()).data;
+            config.id = 'weixinLogin';
+            // config.redirect_url = 'http://localhost:13000/aaaa/bbbb/aaaa'
+            // console.log(config);
+            let vx = new WxLogin(config);
         },
 
         phoneLogin() {
