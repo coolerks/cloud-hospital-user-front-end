@@ -12,11 +12,11 @@
                     <el-autocomplete
                         class="search-input small"
                         prefix-icon="el-icon-search"
-                        v-model="state"
-                        :fetch-suggestions="querySearchAsync"
                         placeholder="点击输入医院名称"
                         @select="handleSelect"
                     >
+<!--                        v-model="state"-->
+<!--                        :fetch-suggestions="querySearchAsync"-->
                         <span slot="suffix" class="search-btn v-link highlight clickable selected">搜索 </span>
                     </el-autocomplete>
                 </div>

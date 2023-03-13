@@ -44,7 +44,15 @@ service.interceptors.response.use(
         if (res.code === 208) {
             loginEvent.$emit("loginDialogEvent");
             return res;
-        }else if (res.code !== 200) {
+        } else if (res.code === 301) {
+            Message({
+                message: "您首次使用此微信进行登录，需要绑定手机号码",
+                type: 'error',
+                duration: 5 * 1000
+            })
+
+            return res;
+        } else if (res.code !== 200) {
             Message({
                 message: res.data || res.message || 'Error',
                 type: 'error',
